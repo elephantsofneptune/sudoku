@@ -86,11 +86,11 @@ end
 class Impossible < StandardError
 end
 
-#class Array
-#   def union
-#      inject([]) { |u, a| u | a }
-#   end
-#end
+class Array
+   def union
+      inject([]) { |u, a| u | a }
+   end
+end
 
 class Cell
 
@@ -115,6 +115,7 @@ class Cell
      elsif new_possibilities.size >= 1
         @possible_values = new_possibilities
         @changed = true
+        puts "#{x} #{y} value #{numbers}  - mrc remove"
         return true
      else
         return false # no change
@@ -151,7 +152,7 @@ class Cell
    def seen_cells
       containing_houses.union
    end
-   def sees?(f) # true if fields share a house
+   def sees?(f) # true if cells share a house
       containing_houses.include?(f)
    end
    def containing_square_pos
@@ -310,6 +311,7 @@ class Puzzle
 
 
       # house is any group of 9 cells that must all have different digits
+      # including: rows, columns and squares
       @houses = @lines + @squares
 
       #   ╭───────┬───────┬───────╮
@@ -506,16 +508,56 @@ class Puzzle
    # locked candidates
    # removes candidates from row/column
    # When in a block, if a number is only possible in one segment, then the candidate can be excluded from that row or column in the other blocks.
-   def locked_candidates_segment_1()
+   def locked_candidates_segment_1() # also called 'locked candidates pointing'
 
-      # if removed any candidates, return true
+      # if any candidates are removed, return true
+ 
+      squares.each do |square|
+         (1..9).each do |i|
+
+            # get the cells that are not solved
+            possible_cells = square.select { |f|
+               f.possible_values.include?(i) && !f.solved?
+            }
+
+            # if there are any unsolved cells in this square
+            if !possible_cells.empty?
+            
+               # get the first column of the current digit 
+               check_column = possible_cells.first.x
+               # if the possible value only exists in this column
+               if possible_cells.all? { |f| f.x == check_column } # same x-coordinate => same column
+                  # remove this digit from all the cells in the column that aren't part of this square
+                  columns[check_column].each { |f| 
+                     if(!f.solved?() && !square.include?(f))
+                        return(true) if f.remove(i)
+                     end
+                  }
+               end
+          
+               # get the first row of the current digit 
+               check_row = possible_cells.first.y
+               # if the possible value only exists in this column
+               if possible_cells.all? { |f| f.y == check_row } # same x-coordinate => same column
+                  # remove this digit from all the cells in the column that aren't part of this square
+                  rows[check_row].each { |f| 
+                     if(!f.solved?() && !square.include?(f))
+                        return(true) if f.remove(i)
+                     end
+                  }
+               end
+            end
+         end
+      end  
+
+
 
       return(false)
    end
 
    # removes candidates from block
    # When in a row or column only one block can contain a number, that number can be excluded for the other cells in that block.
-   def locked_candidates_segment_2()
+   def locked_candidates_segment_2() # also called 'locked candidates claiming'
       # if removed any candidates, return true
       return(false)
    end
@@ -674,8 +716,8 @@ class Puzzle
          exit
       end
 
-      # not able to solve the puzzle
-      return(false)
+      puts "not able to solve the puzzle"
+      return()
    end
 
 end  # This is the end of the Puzzle class
@@ -684,10 +726,12 @@ end  # This is the end of the Puzzle class
 
 
 # simple puzzle
+# working
 #new_puzzle = Puzzle.new("..3.2.6..9..3.5..1..18.64....81.29..7.......8..67.82....26.95..8..2.3..9..5.1.3..")
 
 # looking for hidden singles
-new_puzzle = Puzzle.new(".1...3..8...5..9.3....29....8....6.92791568344.6....7....27....3.2..1...6..3...9.")
+# working
+#new_puzzle = Puzzle.new(".1...3..8...5..9.3....29....8....6.92791568344.6....7....27....3.2..1...6..3...9.")
 # solution:
 #914763258
 #728514963
@@ -701,19 +745,20 @@ new_puzzle = Puzzle.new(".1...3..8...5..9.3....29....8....6.92791568344.6....7..
 
 
 # locked candidates type 1
+# working
 #new_puzzle = Puzzle.new("....23.....4...1...5..84.9...1.7.9.2.93..6.......1.76..........8.......4.6....587")
 
 # hard puzzle
-#new_puzzle = Puzzle.new("4.......9.2.7.1.8...7...3...7.4.8.3.....1.....6.2.5.1...9...8...1.5.3.9.3.......4")
+# not yet working
+new_puzzle = Puzzle.new("4.......9.2.7.1.8...7...3...7.4.8.3.....1.....6.2.5.1...9...8...1.5.3.9.3.......4")
 
 
 
-#new_puzzle = Puzzle.new("....23.....4...1...5..84.9...1.7.9.2.93..6.......1.76..........8.......4.6....587")
 
-
+# working
 #new_puzzle = Puzzle.new("91476325872851496356382941718543762927915683443698257189127534634269178565734819.")
 
-puts new_puzzle.solve()
+new_puzzle.solve()
 
 
 
