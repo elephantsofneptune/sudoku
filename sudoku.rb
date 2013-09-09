@@ -6,7 +6,7 @@
 #
 #        USAGE: ./sudoku.rb
 #
-#  DESCRIPTION: Started with the sudoku code from Matz, and removed the 
+#  DESCRIPTION: Started with the sudoku code from Matz, and removed the
 #               brute force and adding only logic to solve the problem.
 #
 #               On windows, to compile to exe:
@@ -508,47 +508,52 @@ class Puzzle
    # locked candidates
    # removes candidates from row/column
    # When in a block, if a number is only possible in one segment, then the candidate can be excluded from that row or column in the other blocks.
+   #   ╭───────┬───────┬───────╮
+   #   │ · · · │ · · · │ · · · │
+   #   │ # # # │ x x x │ x x x │
+   #   │ · · · │ · · · │ · · · │
+   #   ╰───────┴───────┴───────╯
    def locked_candidates_segment_1() # also called 'locked candidates pointing'
 
       # if any candidates are removed, return true
- 
+
       squares.each do |square|
          (1..9).each do |i|
 
             # get the cells that are not solved
-            possible_cells = square.select { |f|
-               f.possible_values.include?(i) && !f.solved?
+            possible_cells = square.select { |c|
+               c.possible_values.include?(i) && !c.solved?
             }
 
             # if there are any unsolved cells in this square
             if !possible_cells.empty?
-            
-               # get the first column of the current digit 
+
+               # get the first column of the current digit
                check_column = possible_cells.first.x
                # if the possible value only exists in this column
-               if possible_cells.all? { |f| f.x == check_column } # same x-coordinate => same column
+               if possible_cells.all? { |c| c.x == check_column } # same x-coordinate => same column
                   # remove this digit from all the cells in the column that aren't part of this square
-                  columns[check_column].each { |f| 
-                     if(!f.solved?() && !square.include?(f))
-                        return(true) if f.remove(i)
+                  columns[check_column].each { |c|
+                     if(!c.solved?() && !square.include?(c))
+                        return(true) if c.remove(i)
                      end
                   }
                end
-          
-               # get the first row of the current digit 
+
+               # get the first row of the current digit
                check_row = possible_cells.first.y
                # if the possible value only exists in this column
-               if possible_cells.all? { |f| f.y == check_row } # same x-coordinate => same column
+               if possible_cells.all? { |c| c.y == check_row } # same x-coordinate => same column
                   # remove this digit from all the cells in the column that aren't part of this square
-                  rows[check_row].each { |f| 
-                     if(!f.solved?() && !square.include?(f))
-                        return(true) if f.remove(i)
+                  rows[check_row].each { |c|
+                     if(!c.solved?() && !square.include?(c))
+                        return(true) if c.remove(i)
                      end
                   }
                end
             end
          end
-      end  
+      end
 
 
 
@@ -557,8 +562,34 @@ class Puzzle
 
    # removes candidates from block
    # When in a row or column only one block can contain a number, that number can be excluded for the other cells in that block.
+   #   ╭───────┬───────┬───────╮
+   #   │ x x x │ · · · │ · · · │
+   #   │ # # # │ · · · │ · · · │
+   #   │ x x x │ · · · │ · · · │
+   #   ╰───────┴───────┴───────╯
    def locked_candidates_segment_2() # also called 'locked candidates claiming'
       # if removed any candidates, return true
+
+      @lines.each do |line|
+         (1..9).each do |i|
+            possible_cells = line.select { |c|
+               c.possible_values.include?(i) && !c.solved?
+            }
+
+            if !possible_cells.empty?
+               check_square = possible_cells.first.containing_square_pos
+
+               if possible_cells.all? { |c| c.containing_square_pos == check_square } # all cells are in the same square
+                  squares[check_square].each { |c|
+                     if(!c.solved?() && !line.include?(c))
+                        return(true) if c.remove(i)
+                     end
+                  }
+               end
+            end
+         end
+      end
+
       return(false)
    end
 
@@ -649,7 +680,7 @@ class Puzzle
 
             # display the puzzle with candidates
             display_all()
-            
+
             if(solved?())
                puts "puzzle solved"
                return(true)
@@ -709,7 +740,7 @@ class Puzzle
 
 
          end
-         
+
       rescue UserAbort
 
          puts "exiting"
@@ -746,11 +777,11 @@ end  # This is the end of the Puzzle class
 
 # locked candidates type 1
 # working
-#new_puzzle = Puzzle.new("....23.....4...1...5..84.9...1.7.9.2.93..6.......1.76..........8.......4.6....587")
+new_puzzle = Puzzle.new("....23.....4...1...5..84.9...1.7.9.2.93..6.......1.76..........8.......4.6....587")
 
 # hard puzzle
 # not yet working
-new_puzzle = Puzzle.new("4.......9.2.7.1.8...7...3...7.4.8.3.....1.....6.2.5.1...9...8...1.5.3.9.3.......4")
+#new_puzzle = Puzzle.new("4.......9.2.7.1.8...7...3...7.4.8.3.....1.....6.2.5.1...9...8...1.5.3.9.3.......4")
 
 
 
@@ -759,6 +790,7 @@ new_puzzle = Puzzle.new("4.......9.2.7.1.8...7...3...7.4.8.3.....1.....6.2.5.1..
 #new_puzzle = Puzzle.new("91476325872851496356382941718543762927915683443698257189127534634269178565734819.")
 
 new_puzzle.solve()
+
 
 
 
