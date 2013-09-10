@@ -102,7 +102,6 @@ class Cell
       @x = x
       @y = y
       @changed = false
-      @linux = !(RUBY_PLATFORM.downcase =~ /win32/ || RUBY_PLATFORM.downcase =~ /mingw32/)
    end
 
    def remove(numbers)
@@ -226,6 +225,8 @@ class Puzzle
 
 
    def initialize(lines)
+
+      @linux = !(RUBY_PLATFORM.downcase =~ /win32/ || RUBY_PLATFORM.downcase =~ /mingw32/)
 
       # This is the initialization method for the class. It is automatically
       # invoked on new Puzzle instances created with Puzzle.new. Pass the input
