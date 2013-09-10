@@ -439,9 +439,17 @@ class Puzzle
 
             if(2 == col || 5 == col || 8 == col)
                #print "\e[1;33m|\e[0m"
-               print @c.yellow{@c.bold{"│"}}
+               if (@linux)
+                  print @c.yellow{ @c.bold{"│"}} # utf8 char
+               else
+                  print @c.yellow{ @c.bold{"|"}} # normal pipe char
+               end
             else
-               print "│"
+               if (@linux)
+                  print "│" # utf8 char
+               else
+                  print "|" # normal pipe char
+               end
             end
 
 
@@ -828,13 +836,3 @@ new_puzzle = Puzzle.new("....23.....4...1...5..84.9...1.7.9.2.93..6.......1.76..
 #new_puzzle = Puzzle.new("91476325872851496356382941718543762927915683443698257189127534634269178565734819.")
 
 new_puzzle.solve()
-
-
-
-
-
-
-
-
-
-
