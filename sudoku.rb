@@ -102,6 +102,7 @@ class Cell
       @x = x
       @y = y
       @changed = false
+      @linux = !(RUBY_PLATFORM.downcase =~ /win32/ || RUBY_PLATFORM.downcase =~ /mingw32/)
    end
 
    def remove(numbers)
@@ -366,15 +367,49 @@ class Puzzle
 
    def display_all
 
-      print "\n\n    ", @c.red{"Candidate in Red"}, " │ ", @c.bold{@c.green{"Solved in Green"}}, "\n"
+      print "\n\n    ", @c.red{"Candidate in Red"}
 
-      puts("  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+      if (@linux)
+         print @c.yellow{ @c.bold{" │ "}} # utf8 char
+      else
+         print @c.yellow{ @c.bold{" | "}} # normal pipe char
+      end
+      print @c.bold{@c.green{"Solved in Green"}}, "\n"
+
+      if (@linux)
+         puts("  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+      else
+         puts("  ======================================")
+      end
       0.upto 8 do |row|             # For each row
       if(3 == row || 6 == row)
-         #├─────┼─────┼─────┤
-         print @c.yellow{ @c.bold{"├"}}, @c.yellow{ @c.bold{"─" * 29}}, @c.yellow{ @c.bold{"┼"}}, @c.yellow{ @c.bold{"─" * 29}}, @c.yellow{ @c.bold{"┼"}}, @c.yellow{ @c.bold{"─" * 29}},  @c.yellow{ @c.bold{"┤"}}, "\n"
+         if (@linux)
+            #├─────┼─────┼─────┤
+            print @c.yellow{ @c.bold{"├"}}
+            print @c.yellow{ @c.bold{"─" * 29}}
+            print @c.yellow{ @c.bold{"┼"}}
+            print @c.yellow{ @c.bold{"─" * 29}}
+            print @c.yellow{ @c.bold{"┼"}}
+            print @c.yellow{ @c.bold{"─" * 29}}
+            print @c.yellow{ @c.bold{"┤"}}
+         else
+            print @c.yellow{ @c.bold{"|"}}
+            print @c.yellow{ @c.bold{"-" * 29}}
+            print @c.yellow{ @c.bold{"|"}}
+            print @c.yellow{ @c.bold{"-" * 29}}
+            print @c.yellow{ @c.bold{"|"}}
+            print @c.yellow{ @c.bold{"-" * 29}}
+            print @c.yellow{ @c.bold{"|"}}
+         end
+         print "\n"
       end
-      print @c.yellow{ @c.bold{"│"}}
+
+      if (@linux)
+         print @c.yellow{ @c.bold{"│"}} # utf8 char
+      else
+         print @c.yellow{ @c.bold{"|"}} # normal pipe char
+      end
+
       0.upto 8 do |col|           # For each column
         index = row*9+col         # Cell index for (row,col)
 
@@ -385,16 +420,19 @@ class Puzzle
                # characters to smaller unicode characters.
                tmp = @cells[index].to_s
 
-               tmp.gsub!('0','₀')
-               tmp.gsub!('1','₁')
-               tmp.gsub!('2','₂')
-               tmp.gsub!('3','₃')
-               tmp.gsub!('4','₄')
-               tmp.gsub!('5','₅')
-               tmp.gsub!('6','₆')
-               tmp.gsub!('7','₇')
-               tmp.gsub!('8','₈')
-               tmp.gsub!('9','₉')
+               # only do the change for linux, windows doesn't handle unicode very well
+               if (@linux)
+                  tmp.gsub!('0','₀')
+                  tmp.gsub!('1','₁')
+                  tmp.gsub!('2','₂')
+                  tmp.gsub!('3','₃')
+                  tmp.gsub!('4','₄')
+                  tmp.gsub!('5','₅')
+                  tmp.gsub!('6','₆')
+                  tmp.gsub!('7','₇')
+                  tmp.gsub!('8','₈')
+                  tmp.gsub!('9','₉')
+               end
 
                print @c.red{ "%9s" % tmp}
             end
@@ -790,6 +828,7 @@ new_puzzle = Puzzle.new("....23.....4...1...5..84.9...1.7.9.2.93..6.......1.76..
 #new_puzzle = Puzzle.new("91476325872851496356382941718543762927915683443698257189127534634269178565734819.")
 
 new_puzzle.solve()
+
 
 
 
