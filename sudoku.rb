@@ -643,6 +643,18 @@ class Puzzle
    # Subsets
    # When a group contains two cells with the same pair of candidates (and only those two), then this candidates cannot be in another cell of the group. This is so for a row, a column or a block.
    def subset_naked_pair()
+      @houses.each do |house|
+         house.combination(2).each do |pair|
+            c1, c2 = pair
+            if (c1.possible_values.size == 2) && (c1.possible_values == c2.possible_values)
+               (house - pair).each { |h|
+                  return(true) if h.remove(c1.possible_values)
+               }
+            end
+         end
+      end
+      return(false)
+
    end
 
    # When three cells of one group do not contain other numbers than three candidates, those numbers can be excluded from the other cells of the group
@@ -750,6 +762,7 @@ class Puzzle
                raise UserAbort
             end
 
+
             # doesn't solve any cells, only remove candidates
             if(direct_elimination())
                removed_candidate = true
@@ -784,6 +797,11 @@ class Puzzle
                redo # removed candidates  start again - but don't redo the candidates
             end
 
+            if(true == subset_naked_pair())
+               removed_candidate = true
+               puts "subset_naked_pair removed candidate"
+               redo # removed candidates  start again - but don't redo the candidates
+            end
 
 
          end
@@ -809,7 +827,7 @@ end  # This is the end of the Puzzle class
 
 # looking for hidden singles
 # working
-#new_puzzle = Puzzle.new(".1...3..8...5..9.3....29....8....6.92791568344.6....7....27....3.2..1...6..3...9.")
+new_puzzle = Puzzle.new(".1...3..8...5..9.3....29....8....6.92791568344.6....7....27....3.2..1...6..3...9.")
 # solution:
 #914763258
 #728514963
@@ -824,7 +842,7 @@ end  # This is the end of the Puzzle class
 
 # locked candidates type 1
 # working
-new_puzzle = Puzzle.new("....23.....4...1...5..84.9...1.7.9.2.93..6.......1.76..........8.......4.6....587")
+#new_puzzle = Puzzle.new("....23.....4...1...5..84.9...1.7.9.2.93..6.......1.76..........8.......4.6....587")
 
 # hard puzzle
 # not yet working
