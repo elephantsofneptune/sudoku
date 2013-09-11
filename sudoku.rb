@@ -12,6 +12,8 @@
 #               On windows, to compile to exe:
 #                   ocra --no-autoload sudoku.rb
 #
+#               solving techniques from: http://www.sudoku129.com/puzzles/
+#
 #      OPTIONS: ---
 # REQUIREMENTS: displaying text with color in a term in linux:
 #
@@ -659,6 +661,18 @@ class Puzzle
 
    # When three cells of one group do not contain other numbers than three candidates, those numbers can be excluded from the other cells of the group
    def subset_triplet_et_quad()
+      @houses.each do |house|
+         # mrc - add comments
+         (house.combination(3).to_a + house.combination(4).to_a).each do |subsets|
+            all_possible_values = subsets.collect { |c| c.possible_values }.flatten.uniq
+            if (all_possible_values.size == subsets.size) && subsets.all? { |cell| ((cell.possible_values.size == all_possible_values.length) && ((cell.possible_values.length < 3) || (cell.possible_values.length > 4)) && (all_possible_values == cell.possible_values)) }
+               (house - subsets).each { |h|
+                  return(true) if h.remove(last_value)
+               }
+            end
+         end
+      end
+      return(false)
    end
 
    # For the naked subsets (previous method: 3.1) the pairs, triplets and quads permit to exclude candidates from the other cells of the group.
@@ -762,6 +776,11 @@ class Puzzle
                raise UserAbort
             end
 
+            if(true == subset_triplet_et_quad())
+               removed_candidate = true
+               puts "subset_triplet_et_quad removed candidate"
+               redo # removed candidates  start again - but don't redo the candidates
+            end
 
             # doesn't solve any cells, only remove candidates
             if(direct_elimination())
@@ -804,6 +823,7 @@ class Puzzle
             end
 
 
+
          end
 
       rescue UserAbort
@@ -827,7 +847,7 @@ end  # This is the end of the Puzzle class
 
 # looking for hidden singles
 # working
-new_puzzle = Puzzle.new(".1...3..8...5..9.3....29....8....6.92791568344.6....7....27....3.2..1...6..3...9.")
+#new_puzzle = Puzzle.new(".1...3..8...5..9.3....29....8....6.92791568344.6....7....27....3.2..1...6..3...9.")
 # solution:
 #914763258
 #728514963
@@ -846,7 +866,16 @@ new_puzzle = Puzzle.new(".1...3..8...5..9.3....29....8....6.92791568344.6....7..
 
 # hard puzzle
 # not yet working
-#new_puzzle = Puzzle.new("4.......9.2.7.1.8...7...3...7.4.8.3.....1.....6.2.5.1...9...8...1.5.3.9.3.......4")
+new_puzzle = Puzzle.new("4.......9.2.7.1.8...7...3...7.4.8.3.....1.....6.2.5.1...9...8...1.5.3.9.3.......4")
+#481352679
+#623791485
+#597684321
+#175468932
+#238917546
+#964235718
+#749126853
+#816543297
+#352879164
 
 
 
